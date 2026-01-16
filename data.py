@@ -149,10 +149,11 @@ def build_permuted_mnist_loaders_plotC(
     batch_size: int,
     num_workers: int,
     seed: int,
-) -> Tuple[List[DataLoader], List[DataLoader], List[str]]:
+) -> Tuple[List[DataLoader], List[DataLoader], List[str], List[int]]:
     """
     Returns per-task train/test DataLoaders for 3 tasks with input dimensions 8, 8, 26.
-    Each task permutes only the top-left input_dim x input_dim region of the 28x28 image.
+    Each task permutes only the center input_dim x input_dim region of the 28x28 image.
+    Returns: (train_loaders, test_loaders, perms_paths, input_dims)
     """
     set_global_seed(seed)
 
@@ -206,4 +207,4 @@ def build_permuted_mnist_loaders_plotC(
             )
         )
 
-    return train_loaders, test_loaders, perms_paths
+    return train_loaders, test_loaders, perms_paths, input_dims
