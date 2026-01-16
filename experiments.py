@@ -16,7 +16,7 @@ from .utils import get_device, init_state_dict_from_model, load_state_dict_into_
 
 from .methods.sgd import BaselineConfig, run_baseline_sgd
 from .methods.l2 import NaiveL2Config, run_naive_l2
-from .methods.ewc import EWCConfig, run_ewc_multicenter, compute_fisher_information
+from .methods.ewc import EWCConfig, run_ewc_multicenter, compute_fisher_diagonal_per_sample
 
 
 def _fresh_model_from_init(model_cfg: MLPConfig, init_state: Dict[str, torch.Tensor]) -> MNISTMLP:
@@ -675,13 +675,16 @@ def run_permuted_experiment_2C(
         saved_states.append({k: v.clone().cpu() for k, v in model.state_dict().items()})
         
         # Compute Fisher information on this task's data
-        fisher = compute_fisher_information(
+        fisher_list = compute_fisher_diagonal_per_sample(
             model=model,
-            data_loader=train_loaders[task_idx],
-            num_samples=tr_cfg.fisher_num_samples,
+            dataset=train_loaders[task_idx].dataset,
             device=device,
+            num_samples=tr_cfg.fisher_num_samples,
             seed=tr_cfg.fisher_seed,
+            num_workers=0,
         )
+        # Convert list of tensors to dict keyed by parameter name
+        fisher = {name: fisher_list[i] for i, (name, _) in enumerate(model.named_parameters())}
         fisher_dicts.append(fisher)
 
     # All 6 parameter groups (weight and bias for each layer)
