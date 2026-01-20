@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Dict, Optional
 
 import numpy as np
@@ -108,7 +109,7 @@ def plot_fig2a_paper_like(dyn_results: Dict[str, object], title: Optional[str] =
     plt.show()
 
 
-def plot_fig2c_paper_like(results_2c: Dict[str, object], title: Optional[str] = None) -> None:
+def plot_fig2c_paper_like(results_2c: Dict[str, object], title: Optional[str] = None, save_path: Optional[str] = None,) -> None:
     """
     Figure 2C-style (paper-like) plot:
     - Line plot showing Fisher overlap per layer
@@ -142,4 +143,10 @@ def plot_fig2c_paper_like(results_2c: Dict[str, object], title: Optional[str] = 
         ax.set_title(title)
     
     plt.tight_layout()
+    
+    if save_path:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        print(f"Figure saved to: {save_path}")
+    
     plt.show()
