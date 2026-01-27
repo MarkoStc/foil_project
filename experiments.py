@@ -10,7 +10,7 @@ import torch
 
 from .config import ModelConfig, PathsConfig, PermutedMNISTConfig, RotatedMNISTConfig, TrainingConfig
 from .data import build_permuted_mnist_loaders, build_permuted_mnist_loaders_plotC
-from .data_rotated import build_rotated_mnist_loaders
+from .data_rotated import build_rotated_mnist_loaders, build_rotated_mnist_loaders_plotC
 from .model import MLPConfig, MNISTMLP
 from .utils import get_device, init_state_dict_from_model, load_state_dict_into_model, set_global_seed
 
@@ -794,3 +794,153 @@ def _compute_fisher_overlap(fisher1: torch.Tensor, fisher2: torch.Tensor) -> flo
     overlap = 1.0 - frechet_dist_sq
     
     return max(0.0, min(1.0, overlap))  # Clamp to [0, 1]
+
+
+def run_rotated_experiment_2C(
+    paths: PathsConfig = PathsConfig(),
+    ds_cfg: RotatedMNISTConfig = RotatedMNISTConfig(),
+    tr_cfg: TrainingConfig = TrainingConfig(),
+    mdl_cfg: ModelConfig = ModelConfig(),
+    device: Optional[torch.device] = None,
+    angles_deg: tuple = (0.0, 10.0, 90.0),
+) -> Dict[str, object]:
+    """
+    Runs the 3-task experiment for Fig 2C with rotated MNIST.
+    
+    Default angles: [0°, 10°, 90°]
+      - Task A (0°) and Task B (10°) are similar (small rotation difference)
+      - Task C (90°) is very different
+    
+    Trains a single model sequentially on all 3 tasks with SGD.
+    After each task, saves model state and computes Fisher information on that task's data.
+    Computes Fisher overlap per layer: one value for A vs B, one for mean(A vs C, B vs C).
+    """
+    if device is None:
+        device = get_device()
+
+    set_global_seed(ds_cfg.seed)
+
+    train_loaders, test_loaders, angles = build_rotated_mnist_loaders_plotC(
+        data_root=paths.data_root,
+        batch_size=ds_cfg.batch_size,
+        num_workers=ds_cfg.num_workers,
+        seed=ds_cfg.seed,
+        angles_deg=angles_deg,
+    )
+
+    num_tasks = len(train_loaders)
+
+    model_cfg = MLPConfig(
+        input_dim=mdl_cfg.input_dim,
+        hidden_dim1=mdl_cfg.hidden_dim1,
+        hidden_dim2=mdl_cfg.hidden_dim2,
+        num_classes=mdl_cfg.num_classes,
+        use_batchnorm=mdl_cfg.use_batchnorm,
+    )
+
+    # Single model trained sequentially
+    set_global_seed(tr_cfg.seed)
+    model = MNISTMLP(model_cfg)
+    model.to(device)
+
+    saved_states = []
+    fisher_dicts = []
+
+    for task_idx in range(num_tasks):
+        # Train on this task
+        cfg_sgd = BaselineConfig(
+            epochs_per_task=tr_cfg.epochs_per_task,
+            lr=tr_cfg.lr,
+            momentum=tr_cfg.momentum,
+            use_lr_decay=False,
+            track_epoch_dynamics=False,
+            dynamics_tasks=1,
+            seed=tr_cfg.seed,
+        )
+        
+        run_baseline_sgd(
+            model=model,
+            train_loaders=[train_loaders[task_idx]],
+            test_loaders=[test_loaders[task_idx]],
+            num_tasks=1,
+            cfg=cfg_sgd,
+            device=device,
+        )
+        
+        # Save model state after this task
+        saved_states.append({k: v.clone().cpu() for k, v in model.state_dict().items()})
+        
+        # Compute Fisher information on this task's data
+        fisher_list = compute_fisher_diagonal_per_sample(
+            model=model,
+            dataset=train_loaders[task_idx].dataset,
+            device=device,
+            num_samples=tr_cfg.fisher_num_samples,
+            seed=tr_cfg.fisher_seed,
+            num_workers=0,
+        )
+        # Convert list of tensors to dict keyed by parameter name
+        fisher = {name: fisher_list[i] for i, (name, _) in enumerate(model.named_parameters())}
+        fisher_dicts.append(fisher)
+
+    # All 6 parameter groups (weight and bias for each layer)
+    layer_names = ["fc1.weight", "fc1.bias", "fc2.weight", "fc2.bias", "fc3.weight", "fc3.bias"]
+    
+    # Compute overlap per layer
+    overlap_fisher = []
+    
+    for layer_name in layer_names:
+        fisher_A = fisher_dicts[0][layer_name]
+        fisher_B = fisher_dicts[1][layer_name]
+        fisher_C = fisher_dicts[2][layer_name]
+        
+        # Overlap A-B
+        overlap_AB = _compute_fisher_overlap(fisher_A, fisher_B)
+        
+        # Overlap A-C and B-C, then take mean
+        overlap_AC = _compute_fisher_overlap(fisher_A, fisher_C)
+        overlap_BC = _compute_fisher_overlap(fisher_B, fisher_C)
+        overlap_mean_C = (overlap_AC + overlap_BC) / 2.0
+        
+        overlap_fisher.append([overlap_AB, overlap_mean_C])
+
+    full_results: Dict[str, object] = {
+        "scenario": "rotated_2C",
+        "num_tasks": num_tasks,
+        "angles": angles,
+        "epochs_per_task": tr_cfg.epochs_per_task,
+        "lr": tr_cfg.lr,
+        "momentum": tr_cfg.momentum,
+        "seed": ds_cfg.seed,
+        "layer_names": layer_names,
+        "overlap_fisher": overlap_fisher,
+        "fisher_dicts": fisher_dicts,
+        "saved_states": saved_states,
+    }
+
+    # Save
+    os.makedirs(paths.results_dir, exist_ok=True)
+    npz_path = os.path.join(paths.results_dir, "rotated_fig2C_results.npz")
+    meta_path = os.path.join(paths.results_dir, "rotated_fig2C_meta.json")
+
+    save_dict = {
+        "angles": np.array(angles, dtype=np.float32),
+        "overlap_fisher": np.array(overlap_fisher, dtype=np.float32),
+        "layer_names": np.array(layer_names, dtype=object),
+    }
+
+    np.savez(npz_path, **save_dict)
+
+    meta = {
+        "paths": asdict(paths),
+        "dataset": asdict(ds_cfg),
+        "training": asdict(tr_cfg),
+        "model": asdict(mdl_cfg),
+        "device": str(device),
+        "angles": angles,
+        "layer_names": layer_names,
+    }
+    with open(meta_path, "w") as f:
+        json.dump(meta, f, indent=2)
+
+    return full_results
