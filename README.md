@@ -130,3 +130,62 @@ EE411-Project/
 └── utils.py                          # General utilities (logging, metrics, helpers)
 
 
+
+## Results
+
+This section mirrors the key diagnostics reported in our write-up. All figures below are stored in the `figures/` folder.
+
+---
+
+### PermutedMNIST
+
+**Figure 2A-style (sequential training curves).**  
+Under plain sequential **SGD**, performance on earlier permutations drops sharply after each task switch (clear catastrophic forgetting). **EWC** mitigates these drops and preserves higher accuracy on previously learned tasks, while **L2** provides only limited protection.
+
+![PermutedMNIST — Fig. 2A-style](figures/2aperm.jpeg)
+
+**Figure 2B-style (final performance across tasks).**  
+After training on the full stream, EWC retains substantially higher accuracy on earlier tasks than SGD, indicating reduced forgetting.
+
+![PermutedMNIST — Fig. 2B-style](<figures/2bperm (1).jpeg>)
+
+**Figure 2C-style (summary diagnostic).**  
+The aggregate diagnostic further highlights the gap between SGD and EWC in terms of retention across the task sequence.
+
+![PermutedMNIST — Fig. 2C-style](figures/2cperm.png)
+
+---
+
+### RotatedMNIST
+
+**Figure 2A-style.**  
+For rotated tasks, forgetting is typically milder than in PermutedMNIST (tasks share more structure), but EWC still improves stability and retention compared to SGD as the number of tasks grows.
+
+![RotatedMNIST — Fig. 2A-style](figures/FigureA_rotated.png)
+
+**Figure 2B-style.**  
+EWC achieves higher final accuracy across earlier rotations than SGD, indicating improved resistance to forgetting.
+
+![RotatedMNIST — Fig. 2B-style](<figures/FigureB_rotated (1).png>)
+
+**Figure 2C-style.**  
+The summary diagnostic is consistent with the qualitative trend: EWC provides a more robust trade-off between learning new rotations and retaining older ones.
+
+![RotatedMNIST — Fig. 2C-style](figures/fig2c_rotated.png)
+
+---
+
+### Optional: Sequential Atari (reduced setting)
+
+We additionally include an exploratory **reduced sequential Atari** setting as a qualitative diagnostic. Due to compute constraints, this is **not** intended as a full-scale quantitative replication of the original Atari protocol.
+
+**Training schedule (reduced setting).**
+
+![Reduced sequential Atari schedule](<figures/atari_schedule (1).png>)
+
+**Example result (3 games: SGD vs EWC).**
+
+![Reduced sequential Atari — SGD vs EWC (3 games)](<figures/fig3B_3games_sgd_vs_ewc (1).png>)
+
+
+
