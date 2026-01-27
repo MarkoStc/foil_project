@@ -1,22 +1,23 @@
 # EE411-Project — Reproducibility Challenge: Overcoming Catastrophic Forgetting in Neural Networks
 
-**About • Data • Installation • Method • How To Use • Credits • Code Structure • Results • License**
+**About • Data • Installation • Method • How To Use • Code Structure • Results • Credits • License**
 
 ---
 
 ## Team
 
-- **Sofija Orlovic** 
+- **Sofija Orlovic**
 - **Jane Klavir**
-- **Enric Guasch Mesia** 
-- **Petar Damjanovic** 
-- **Marko Stojanovic** 
+- **Enric Guasch Mesia**
+- **Petar Damjanovic**
+- **Marko Stojanovic**
 
 ---
 
 ## About
 
-This repository contains our work for the **EE411 / Fundamentals of Inference and Learning** reproducibility challenge.  
+This repository contains our work for the **EE411 / Fundamentals of Inference and Learning** reproducibility challenge.
+
 Our goal is to reproduce key results from:
 
 - **Kirkpatrick et al. (2017)**, *Overcoming catastrophic forgetting in neural networks* (EWC)
@@ -48,6 +49,7 @@ Dataset utilities are implemented in:
 Create an environment and install dependencies.
 
 ### Option A — `venv`
+
 ```bash
 python -m venv .venv
 # Windows:
@@ -57,6 +59,16 @@ source .venv/bin/activate
 
 pip install -U pip
 pip install torch torchvision numpy matplotlib pandas jupyter
+```
+
+### Option B — conda
+
+```bash
+conda create -n ewc-repro python=3.10 -y
+conda activate ewc-repro
+pip install torch torchvision numpy matplotlib pandas jupyter
+```
+
 ---
 
 ## Method
@@ -81,7 +93,7 @@ where \(F_i\) is the estimated Fisher information for parameter \(\theta_i\), \(
 
 Method implementations:
 - `methods/sgd.py` — SGD baseline  
-- `methods/l2.py` — L2 baseline  
+- `methods/l2.py` — L2 regularization baseline  
 - `methods/ewc.py` — EWC (Fisher estimation + consolidation + penalty)  
 
 Core experiment/plot logic:
@@ -100,14 +112,21 @@ Core experiment/plot logic:
 Main entry points:
 - `notebooks/run_fig2A_fig2B.ipynb` — Fig. 2A / Fig. 2B-style experiments for PermutedMNIST and RotatedMNIST  
 - `notebooks/run_fig2C.ipynb` — Fig. 2C-style diagnostic  
-- `notebooks/atari (1).ipynb` — optional Atari exploration (reduced setting)
+- `notebooks/atari (1).ipynb` — optional Atari exploration (reduced setting)  
 
 Run:
+
 ```bash
 jupyter notebook
+```
 
+---
 
+## Code Structure
+
+```text
 EE411-Project/
+├── figures/                          # Figures used in the report / README
 ├── methods/                          # Continual-learning methods (regularizers / training variants)
 │   ├── __init__.py
 │   ├── ewc.py                        # EWC implementation (Fisher + consolidation + penalty)
@@ -120,6 +139,7 @@ EE411-Project/
 │   └── run_fig2C.ipynb               # Main notebook: Fig2C-style results
 │
 ├── .gitignore
+├── README.md
 ├── __init__.py
 ├── config.py                         # Central config (hyperparameters, seeds, paths, etc.)
 ├── data.py                           # PermutedMNIST dataset/task stream utilities
@@ -128,14 +148,13 @@ EE411-Project/
 ├── model.py                          # Model architecture(s)
 ├── plotting.py                       # Plotting helpers for report figures
 └── utils.py                          # General utilities (logging, metrics, helpers)
+```
 
-
+---
 
 ## Results
 
 This section mirrors the key diagnostics reported in our write-up. All figures below are stored in the `figures/` folder.
-
----
 
 ### PermutedMNIST
 
@@ -147,14 +166,12 @@ Under plain sequential **SGD**, performance on earlier permutations drops sharpl
 **Figure 2B-style (final performance across tasks).**  
 After training on the full stream, EWC retains substantially higher accuracy on earlier tasks than SGD, indicating reduced forgetting.
 
-![PermutedMNIST — Fig. 2B-style](<figures/2bperm (1).jpeg>)
+![PermutedMNIST — Fig. 2B-style](figures/2bperm%20(1).jpeg)
 
 **Figure 2C-style (summary diagnostic).**  
 The aggregate diagnostic further highlights the gap between SGD and EWC in terms of retention across the task sequence.
 
 ![PermutedMNIST — Fig. 2C-style](figures/2cperm.png)
-
----
 
 ### RotatedMNIST
 
@@ -166,14 +183,12 @@ For rotated tasks, forgetting is typically milder than in PermutedMNIST (tasks s
 **Figure 2B-style.**  
 EWC achieves higher final accuracy across earlier rotations than SGD, indicating improved resistance to forgetting.
 
-![RotatedMNIST — Fig. 2B-style](<figures/FigureB_rotated (1).png>)
+![RotatedMNIST — Fig. 2B-style](figures/FigureB_rotated%20(1).png)
 
 **Figure 2C-style.**  
 The summary diagnostic is consistent with the qualitative trend: EWC provides a more robust trade-off between learning new rotations and retaining older ones.
 
 ![RotatedMNIST — Fig. 2C-style](figures/fig2c_rotated.png)
-
----
 
 ### Optional: Sequential Atari (reduced setting)
 
@@ -181,11 +196,23 @@ We additionally include an exploratory **reduced sequential Atari** setting as a
 
 **Training schedule (reduced setting).**
 
-![Reduced sequential Atari schedule](<figures/atari_schedule (1).png>)
+![Reduced sequential Atari schedule](figures/atari_schedule%20(1).png)
 
 **Example result (3 games: SGD vs EWC).**
 
-![Reduced sequential Atari — SGD vs EWC (3 games)](<figures/fig3B_3games_sgd_vs_ewc (1).png>)
+![Reduced sequential Atari — SGD vs EWC (3 games)](figures/fig3B_3games_sgd_vs_ewc%20(1).png)
 
+---
 
+## Credits
 
+This work was carried out as part of a reproducibility challenge based on:
+- **Kirkpatrick et al. (2017)**, *Overcoming catastrophic forgetting in neural networks*.
+
+We acknowledge the authors of the original paper for the method and experimental design that inspired this reproduction effort.
+
+---
+
+## License
+
+Educational project for EE411. Add a `LICENSE` file if you want to explicitly license the code (e.g., MIT).
