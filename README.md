@@ -6,11 +6,11 @@
 
 ## Team
 
-- **[Sofija Orlovic]** 
-- **[Jane Klavir]**
-- **[Enric Guasch Mesia]** 
-- **[Petar Damjanovic]** 
-- **[Marko Stojanovic]** 
+- **Sofija Orlovic** 
+- **Jane Klavir**
+- **Enric Guasch Mesia** 
+- **Petar Damjanovic** 
+- **Marko Stojanovic** 
 
 ---
 
@@ -57,6 +57,7 @@ source .venv/bin/activate
 
 pip install -U pip
 pip install torch torchvision numpy matplotlib pandas jupyter
+---
 
 ## Method
 
