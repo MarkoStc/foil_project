@@ -217,7 +217,3 @@ We acknowledge the authors of the original paper for the method and experimental
 - **Petar Damjanovic** — Lead report writing and coordination of the written deliverable.
 - **Marko Stojanovic** — Explored the **Atari** setup and ran preliminary/reduced-setting experiments.
 
-
-## License
-
-Educational project for EE411. Add a `LICENSE` file if you want to explicitly license the code (e.g., MIT).
