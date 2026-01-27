@@ -14,6 +14,9 @@ class MLPConfig:
     hidden_dim2: int = 400
     num_classes: int = 10
     use_batchnorm: bool = False
+    use_dropout: bool = False
+    dropout_input_p: float = 0.2
+    dropout_hidden_p: float = 0.5
 
 
 class MNISTMLP(nn.Module):
@@ -36,6 +39,16 @@ class MNISTMLP(nn.Module):
         else:
             self.bn1 = nn.Identity()
             self.bn2 = nn.Identity()
+        
+        # Dropout (used for the Fig. 2B baseline "SGD + dropout")
+        if cfg.use_dropout:
+            self.drop_in = nn.Dropout(p=cfg.dropout_input_p)
+            self.drop1 = nn.Dropout(p=cfg.dropout_hidden_p)
+            self.drop2 = nn.Dropout(p=cfg.dropout_hidden_p)
+        else:
+            self.drop_in = nn.Identity()
+            self.drop1 = nn.Identity()
+            self.drop2 = nn.Identity()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         if x.dim() == 4:
@@ -43,13 +56,16 @@ class MNISTMLP(nn.Module):
         elif x.dim() != 2:
             raise ValueError(f"Unexpected input shape: {tuple(x.shape)}")
 
+        x = self.drop_in(x)
         x = self.fc1(x)
         x = self.bn1(x)
         x = F.relu(x)
 
+        x = self.drop1(x)
         x = self.fc2(x)
         x = self.bn2(x)
         x = F.relu(x)
 
+        x = self.drop2(x)
         logits = self.fc3(x)
         return logits

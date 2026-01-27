@@ -59,6 +59,18 @@ def run_full_permuted_experiment(
         use_batchnorm=mdl_cfg.use_batchnorm,
     )
 
+    # Fig. 2B baseline: "SGD + dropout" (paper)
+    model_cfg_sgd = MLPConfig(
+        input_dim=mdl_cfg.input_dim,
+        hidden_dim1=mdl_cfg.hidden_dim1,
+        hidden_dim2=mdl_cfg.hidden_dim2,
+        num_classes=mdl_cfg.num_classes,
+        use_batchnorm=mdl_cfg.use_batchnorm,
+        use_dropout=tr_cfg.sgd_use_dropout,
+        dropout_input_p=tr_cfg.sgd_dropout_input_p,
+        dropout_hidden_p=tr_cfg.sgd_dropout_hidden_p,
+    )
+
     # Shared initialization across methods
     set_global_seed(tr_cfg.seed)
     _m0 = MNISTMLP(model_cfg)
@@ -75,7 +87,7 @@ def run_full_permuted_experiment(
         seed=tr_cfg.seed,
     )
     out_single = run_baseline_sgd(
-        model=_fresh_model_from_init(model_cfg, init_state),
+        model=_fresh_model_from_init(model_cfg_sgd, init_state),
         train_loaders=train_loaders[:1],
         test_loaders=test_loaders[:1],
         num_tasks=1,
@@ -159,6 +171,9 @@ def run_full_permuted_experiment(
         "lambda_l2": tr_cfg.lambda_l2,
         "lambda_ewc": tr_cfg.lambda_ewc,
         "fisher_num_samples": tr_cfg.fisher_num_samples,
+        "sgd_use_dropout": tr_cfg.sgd_use_dropout,
+        "sgd_dropout_input_p": tr_cfg.sgd_dropout_input_p,
+        "sgd_dropout_hidden_p": tr_cfg.sgd_dropout_hidden_p,
         "sgd": out_sgd,
         "ewc": out_ewc,
         "l2": out_l2,  # may be None
@@ -236,6 +251,17 @@ def run_fig2a_dynamics_permuted_abc(
         use_batchnorm=mdl_cfg.use_batchnorm,
     )
 
+    model_cfg_sgd = MLPConfig(
+        input_dim=mdl_cfg.input_dim,
+        hidden_dim1=mdl_cfg.hidden_dim1,
+        hidden_dim2=mdl_cfg.hidden_dim2,
+        num_classes=mdl_cfg.num_classes,
+        use_batchnorm=mdl_cfg.use_batchnorm,
+        use_dropout=tr_cfg.sgd_use_dropout,
+        dropout_input_p=tr_cfg.sgd_dropout_input_p,
+        dropout_hidden_p=tr_cfg.sgd_dropout_hidden_p,
+    )
+
     set_global_seed(tr_cfg.seed)
     _m0 = MNISTMLP(model_cfg)
     init_state = init_state_dict_from_model(_m0)
@@ -251,7 +277,7 @@ def run_fig2a_dynamics_permuted_abc(
         seed=tr_cfg.seed,
     )
     out_sgd = run_baseline_sgd(
-        model=_fresh_model_from_init(model_cfg, init_state),
+        model=_fresh_model_from_init(model_cfg_sgd, init_state),
         train_loaders=train_loaders,
         test_loaders=test_loaders,
         num_tasks=3,
@@ -347,6 +373,17 @@ def run_full_rotated_experiment(
         use_batchnorm=mdl_cfg.use_batchnorm,
     )
 
+    model_cfg_sgd = MLPConfig(
+        input_dim=mdl_cfg.input_dim,
+        hidden_dim1=mdl_cfg.hidden_dim1,
+        hidden_dim2=mdl_cfg.hidden_dim2,
+        num_classes=mdl_cfg.num_classes,
+        use_batchnorm=mdl_cfg.use_batchnorm,
+        use_dropout=tr_cfg.sgd_use_dropout,
+        dropout_input_p=tr_cfg.sgd_dropout_input_p,
+        dropout_hidden_p=tr_cfg.sgd_dropout_hidden_p,
+    )
+
     # Shared initialization across methods
     set_global_seed(tr_cfg.seed)
     _m0 = MNISTMLP(model_cfg)
@@ -363,7 +400,7 @@ def run_full_rotated_experiment(
         seed=tr_cfg.seed,
     )
     out_single = run_baseline_sgd(
-        model=_fresh_model_from_init(model_cfg, init_state),
+        model=_fresh_model_from_init(model_cfg_sgd, init_state),
         train_loaders=train_loaders[:1],
         test_loaders=test_loaders[:1],
         num_tasks=1,
@@ -383,7 +420,7 @@ def run_full_rotated_experiment(
         seed=tr_cfg.seed,
     )
     out_sgd = run_baseline_sgd(
-        model=_fresh_model_from_init(model_cfg, init_state),
+        model=_fresh_model_from_init(model_cfg_sgd, init_state),
         train_loaders=train_loaders,
         test_loaders=test_loaders,
         num_tasks=ds_cfg.num_tasks,
@@ -447,6 +484,9 @@ def run_full_rotated_experiment(
         "lambda_l2": tr_cfg.lambda_l2,
         "lambda_ewc": tr_cfg.lambda_ewc,
         "fisher_num_samples": tr_cfg.fisher_num_samples,
+        "sgd_use_dropout": tr_cfg.sgd_use_dropout,
+        "sgd_dropout_input_p": tr_cfg.sgd_dropout_input_p,
+        "sgd_dropout_hidden_p": tr_cfg.sgd_dropout_hidden_p,
         "sgd": out_sgd,
         "ewc": out_ewc,
         "l2": out_l2,  # may be None
@@ -526,6 +566,7 @@ def run_fig2a_dynamics_rotated_abc(
         use_batchnorm=mdl_cfg.use_batchnorm,
     )
 
+
     set_global_seed(tr_cfg.seed)
     _m0 = MNISTMLP(model_cfg)
     init_state = init_state_dict_from_model(_m0)
@@ -541,7 +582,7 @@ def run_fig2a_dynamics_rotated_abc(
         seed=tr_cfg.seed,
     )
     out_sgd = run_baseline_sgd(
-        model=_fresh_model_from_init(model_cfg, init_state),
+        model=_fresh_model_from_init(model_cfg_sgd, init_state),
         train_loaders=train_loaders,
         test_loaders=test_loaders,
         num_tasks=3,

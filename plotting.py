@@ -28,10 +28,12 @@ def plot_fig2b_paper_like(full_results: Dict[str, object], compute_l2: bool, tit
     COLOR_SGD = "#4f6fb3"
     COLOR_L2  = "#2f6b2f"
 
+    sgd_label = "SGD+dropout" if bool(full_results.get("sgd_use_dropout", False)) else "SGD"
+
     plt.figure(figsize=(7.6, 4.8))
 
     plt.plot(x, ewc_curve, color=COLOR_EWC, marker="o", linewidth=2.0, label="EWC")
-    plt.plot(x, sgd_curve, color=COLOR_SGD, marker="o", linewidth=2.0, label="SGD+dropout")
+    plt.plot(x, sgd_curve, color=COLOR_SGD, marker="o", linewidth=2.0, label=sgd_label)
 
     if compute_l2 and full_results.get("l2", None) is not None:
         l2_curve = np.array(full_results["l2"]["avg_acc_curve"], dtype=np.float32)

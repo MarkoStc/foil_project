@@ -45,6 +45,13 @@ class TrainingConfig:
     lambda_l2: float = 1.0
     lambda_ewc: float = 100.0
 
+    # Baseline regularization for Fig. 2B:
+    # The original EWC paper compares against "SGD + dropout".
+    # Use input dropout p=0.2 and hidden dropout p=0.5 (paper defaults).
+    sgd_use_dropout: bool = True
+    sgd_dropout_input_p: float = 0.2
+    sgd_dropout_hidden_p: float = 0.5
+
     # Fisher estimation (Step 9)
     fisher_num_samples: int = 1_000
     fisher_seed: int = 1234
