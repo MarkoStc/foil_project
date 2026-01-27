@@ -212,6 +212,6 @@ We acknowledge the authors of the original paper for the method and experimental
 - **Sofija Orlovic** — Report writing and editing support across sections.
 - **Jane Klavir** — Implemented and generated the **Figure 2C-style** experiments/plots.
 - **Enric Guasch Mesia** — Implemented and generated the **Figure 2A and 2B-style** experiments/plots; contributed to report proofreading and edits.
-- **Petar Damjanovic** — Lead report writing and coordination of the written deliverable.
+- **Petar Damjanovic** — Report writing and coordination of the written deliverable.
 - **Marko Stojanovic** — Explored the **Atari** setup and ran preliminary/reduced-setting experiments.
 
