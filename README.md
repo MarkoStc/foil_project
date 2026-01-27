@@ -82,16 +82,12 @@ We train a single neural network sequentially on tasks (Task 1 → Task 2 → �
 
 ### Elastic Weight Consolidation (EWC)
 
-EWC penalizes changes to parameters that are important for previously learned tasks using a diagonal Fisher approximation:
+EWC adds a quadratic penalty weighted by a diagonal Fisher approximation:
 
-\[
-\mathcal{L}_{\text{total}}(\theta) = \mathcal{L}_{\text{task}}(\theta)
-+ \lambda \sum_i F_i(\theta_i - \theta_i^\star)^2.
-\]
+L_total(θ) = L_task(θ) + λ ∑_i F_i (θ_i − θ_i*)²,
 
-where \(F_i\) is the estimated Fisher information for parameter \(\theta_i\), \(\theta^\star\) are consolidated parameters from previous tasks, and \(\lambda\) controls the strength of the regularizer.
+where F_i is the estimated Fisher information (importance) for parameter θ_i, θ* are the consolidated parameters from previous tasks, and λ controls the strength of the regularizer.
 
-Method implementations:
 - `methods/sgd.py` — SGD baseline  
 - `methods/l2.py` — L2 regularization baseline  
 - `methods/ewc.py` — EWC (Fisher estimation + consolidation + penalty)  
@@ -212,6 +208,15 @@ This work was carried out as part of a reproducibility challenge based on:
 We acknowledge the authors of the original paper for the method and experimental design that inspired this reproduction effort.
 
 ---
+
+## Group contributions
+
+- **Sofija Orlovic** — Report writing and editing support across sections.
+- **Jane Klavir** — Implemented and generated the **Figure 2C-style** experiments/plots.
+- **Enric Guasch Mesia** — Implemented and generated the **Figure 2A and 2B-style** experiments/plots; contributed to report proofreading and edits.
+- **Petar Damjanovic** — Lead report writing and coordination of the written deliverable.
+- **Marko Stojanovic** — Explored the **Atari** setup and ran preliminary/reduced-setting experiments.
+
 
 ## License
 
