@@ -1,7 +1,5 @@
 # EE411-Project — Reproducibility Challenge: Overcoming Catastrophic Forgetting in Neural Networks
 
-**About • Data • Installation • Method • How To Use • Code Structure • Results • Credits • License**
-
 ---
 
 ## Team
