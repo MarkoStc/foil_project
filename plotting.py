@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Dict, Optional
 
 import numpy as np
@@ -28,12 +29,10 @@ def plot_fig2b_paper_like(full_results: Dict[str, object], compute_l2: bool, tit
     COLOR_SGD = "#4f6fb3"
     COLOR_L2  = "#2f6b2f"
 
-    sgd_label = "SGD+dropout" if bool(full_results.get("sgd_use_dropout", False)) else "SGD"
-
     plt.figure(figsize=(7.6, 4.8))
 
     plt.plot(x, ewc_curve, color=COLOR_EWC, marker="o", linewidth=2.0, label="EWC")
-    plt.plot(x, sgd_curve, color=COLOR_SGD, marker="o", linewidth=2.0, label=sgd_label)
+    plt.plot(x, sgd_curve, color=COLOR_SGD, marker="o", linewidth=2.0, label="SGD+dropout")
 
     if compute_l2 and full_results.get("l2", None) is not None:
         l2_curve = np.array(full_results["l2"]["avg_acc_curve"], dtype=np.float32)
@@ -107,4 +106,47 @@ def plot_fig2a_paper_like(dyn_results: Dict[str, object], title: Optional[str] =
 
     axes[-1].set_xlabel("Training time (cumulative epochs)")
     plt.tight_layout()
+    plt.show()
+
+
+def plot_fig2c_paper_like(results_2c: Dict[str, object], title: Optional[str] = None, save_path: Optional[str] = None,) -> None:
+    """
+    Figure 2C-style (paper-like) plot:
+    - Line plot showing Fisher overlap per layer
+    - Two lines: one for A vs B overlap, one for mean(A vs C, B vs C) overlap
+    - 6 layer groups on x-axis (layer depth 1-6)
+    - y-axis: overlap in Fisher information [0, 1]
+    """
+    layer_names = results_2c["layer_names"]
+    overlap_fisher = np.array(results_2c["overlap_fisher"], dtype=np.float32)  # shape: (6, 2)
+    
+    num_layers = len(layer_names)
+    x = np.arange(1, num_layers + 1)
+    
+    # Colors matching paper style
+    COLOR_LOW = "#4f6fb3"   # Blue for A vs B (similar tasks)
+    COLOR_HIGH = "#b54a4a"  # Red for A/B vs C (dissimilar tasks)
+    
+    fig, ax = plt.subplots(figsize=(8, 5))
+    
+    ax.plot(x, overlap_fisher[:, 0], color=COLOR_LOW, marker="o", linewidth=2.0, label="low % permutation")
+    ax.plot(x, overlap_fisher[:, 1], color=COLOR_HIGH, marker="o", linewidth=2.0, label="high % permutation")
+    
+    ax.set_xlabel("Layer depth")
+    ax.set_ylabel("Overlap in Fisher")
+    ax.set_ylim(0, 1)
+    ax.set_xticks(x)
+    ax.legend(frameon=False, loc="best")
+    ax.grid(False)
+    
+    if title:
+        ax.set_title(title)
+    
+    plt.tight_layout()
+    
+    if save_path:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        print(f"Figure saved to: {save_path}")
+    
     plt.show()
